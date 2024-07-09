@@ -45,29 +45,35 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-//#define USE_BASE      // Enable the base controller code
-#undef USE_BASE     // Disable the base controller code
+#define USE_BASE      // Enable the base controller code
+//#undef USE_BASE     // Disable the base controller code
 
 /* Define the motor controller and encoder library you are using */
 #ifdef USE_BASE
    /* The Pololu VNH5019 dual motor driver shield */
-   #define POLOLU_VNH5019
+   //#define POLOLU_VNH5019
 
    /* The Pololu MC33926 dual motor driver shield */
    //#define POLOLU_MC33926
 
    /* The RoboGaia encoder shield */
-   #define ROBOGAIA
-   
+   //#define ROBOGAIA
+
    /* Encoders directly attached to Arduino board */
    //#define ARDUINO_ENC_COUNTER
 
+    /* 使用自定义的编码器驱动 */
+   #define ARDUINO_MY_COUNTER
+
    /* L298 Motor driver*/
    //#define L298_MOTOR_DRIVER
+
+    #define L298P_MOTOR_DRIVER
+
 #endif
 
-#define USE_SERVOS  // Enable use of PWM servos as defined in servos.h
-//#undef USE_SERVOS     // Disable use of PWM servos
+//#define USE_SERVOS  // Enable use of PWM servos as defined in servos.h
+#undef USE_SERVOS     // Disable use of PWM servos
 
 /* Serial port baud rate */
 #define BAUDRATE     57600
@@ -104,17 +110,17 @@
   #include "diff_controller.h"
 
   /* Run the PID loop at 30 times per second */
-  #define PID_RATE           30     // Hz
+  #define PID_RATE           30     // Hz PID调试频率
 
   /* Convert the rate into an interval */
-  const int PID_INTERVAL = 1000 / PID_RATE;
-  
+  const int PID_INTERVAL = 1000 / PID_RATE; // PID调试周期
+
   /* Track the next time we make a PID calculation */
-  unsigned long nextPID = PID_INTERVAL;
+  unsigned long nextPID = PID_INTERVAL; //PID调试的结束时刻标记
 
   /* Stop the robot if it hasn't received a movement command
    in this number of milliseconds */
-  #define AUTO_STOP_INTERVAL 2000
+  #define AUTO_STOP_INTERVAL 5000
   long lastMotorCommand = AUTO_STOP_INTERVAL;
 #endif
 
@@ -206,7 +212,7 @@ int runCommand() {
     resetPID();
     Serial.println("OK");
     break;
-  case MOTOR_SPEEDS:
+  case MOTOR_SPEEDS: //---------------------------------------------
     /* Reset the auto stop timer */
     lastMotorCommand = millis();
     if (arg1 == 0 && arg2 == 0) {
@@ -215,6 +221,7 @@ int runCommand() {
       moving = 0;
     }
     else moving = 1;
+    //设置左右电机目标转速分别为参数1和参数2
     leftPID.TargetTicksPerFrame = arg1;
     rightPID.TargetTicksPerFrame = arg2;
     Serial.println("OK"); 
@@ -240,7 +247,6 @@ int runCommand() {
 /* Setup function--runs once at startup. */
 void setup() {
   Serial.begin(BAUDRATE);
-
 // Initialize the motor controller if used */
 #ifdef USE_BASE
   #ifdef ARDUINO_ENC_COUNTER
@@ -263,9 +269,11 @@ void setup() {
     
     // enable PCINT1 and PCINT2 interrupt in the general interrupt mask
     PCICR |= (1 << PCIE1) | (1 << PCIE2);
-  #endif
-  initMotorController();
-  resetPID();
+    #elif defined ARDUINO_MY_COUNTER
+    initEncoders();
+    #endif
+    initMotorController();
+    resetPID();
 #endif
 
 /* Attach servos if used */
