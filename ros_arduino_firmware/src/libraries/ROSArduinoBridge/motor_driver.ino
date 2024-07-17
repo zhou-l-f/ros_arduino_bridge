@@ -9,7 +9,7 @@
 
 #ifdef USE_BASE
    
-#ifdef POLOLU_VNH5019
+  #ifdef POLOLU_VNH5019
   /* Include the Pololu library */
   #include "DualVNH5019MotorShield.h"
 
@@ -32,7 +32,7 @@
     setMotorSpeed(LEFT, leftSpeed);
     setMotorSpeed(RIGHT, rightSpeed);
   }
-#elif defined POLOLU_MC33926
+  #elif defined POLOLU_MC33926
   /* Include the Pololu library */
   #include "DualMC33926MotorShield.h"
 
@@ -55,7 +55,7 @@
     setMotorSpeed(LEFT, leftSpeed);
     setMotorSpeed(RIGHT, rightSpeed);
   }
-#elif defined L298_MOTOR_DRIVER
+  #elif defined L298_MOTOR_DRIVER
   void initMotorController() {
     digitalWrite(RIGHT_MOTOR_ENABLE, HIGH);
     digitalWrite(LEFT_MOTOR_ENABLE, HIGH);
@@ -86,12 +86,7 @@
     setMotorSpeed(LEFT, leftSpeed);
     setMotorSpeed(RIGHT, rightSpeed);
   }
-#else
-  //#error A motor driver must be selected!
-
-#endif
-
-#elif defined L298P_MOTOR_DRIVER
+  #elif defined L298P_MOTOR_DRIVER
   void initMotorController(){
     // pinMode(DIRA,OUTPUT);
     // pinMode(PWMA,OUTPUT);
@@ -141,4 +136,5 @@
     setMotorSpeed(LEFT, leftSpeed);
     setMotorSpeed(RIGHT, rightSpeed);
   }
+  #endif
 #endif

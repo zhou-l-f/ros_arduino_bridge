@@ -102,7 +102,7 @@
    #include "servos.h"
 #endif
 
-#ifdef USE_BASE
+#ifdef USE_BASE                            //调用我们编写的头文件头文件
   /* Motor driver function definitions */
   #include "motor_driver.h"
 

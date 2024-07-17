@@ -194,7 +194,10 @@
       return;
     }
   }
-
+  void resetEncoders() {
+    resetEncoder(LEFT);
+    resetEncoder(RIGHT);
+  }
   long start_time = millis();
   int interval_time = 50;
   int per_round = 160*4;
