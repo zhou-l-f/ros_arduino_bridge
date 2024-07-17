@@ -102,8 +102,10 @@
     setMotorSpeed(RIGHT, rightSpeed);
   }
 #elif defined ARDUINO_MY_COUNTER
+  #include<PID_v1.h> //调用PID包
   volatile long left_count = 0L;
   volatile long right_count = 0L;
+
   void initEncoders(){
     pinMode(LEFT_A,INPUT); // 21  --- 2
     pinMode(LEFT_B,INPUT); // 20  --- 3
@@ -115,6 +117,7 @@
     attachInterrupt(5,rightEncoderEventA,CHANGE);
     attachInterrupt(4,rightEncoderEventB,CHANGE);
   }
+  //四倍频计算  转数
   void leftEncoderEventA(){
     if(digitalRead(LEFT_A) == HIGH){
       if(digitalRead(LEFT_B) == HIGH){
@@ -191,6 +194,36 @@
       return;
     }
   }
+
+  long start_time = millis();
+  int interval_time = 50;
+  int per_round = 160*4;
+  
+double get_current_vel(volatile long count)
+{
+  long right_now = millis();
+  long past_time = right_now - start_time;
+  if(past_time>=interval_time)
+  {
+    noInterrupts();
+    vel = (double)count/per_round/past_time*60*1000;
+    count = 0;
+    start_time = right_now;
+    interrupts();
+    //Serial.println(vel);
+    return vel;
+  }
+}
+  /*这是加上自己的pid */
+
+void update_vel()
+{
+
+  vela = get_current_vel(left_count);
+  velb = get_current_vel(right_count);
+  
+  setMotorSpeeds(pwma,pwmb);
+}
   #else
   //#error A motor driver must be selected!
 #endif

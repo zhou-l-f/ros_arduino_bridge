@@ -87,16 +87,24 @@
     setMotorSpeed(RIGHT, rightSpeed);
   }
 #else
-  #error A motor driver must be selected!
+  //#error A motor driver must be selected!
 
 #endif
 
 #elif defined L298P_MOTOR_DRIVER
   void initMotorController(){
-    pinMode(DIRA,OUTPUT);
+    // pinMode(DIRA,OUTPUT);
+    // pinMode(PWMA,OUTPUT);
+    // pinMode(DIRB,OUTPUT);
+    // pinMode(PWMB,OUTPUT);
+
+    pinMode(MOTORPINA1,OUTPUT);
+    pinMode(MOTORPINA2,OUTPUT);
     pinMode(PWMA,OUTPUT);
-    pinMode(DIRB,OUTPUT);
+    pinMode(MOTORPINA1,OUTPUT);
+    pinMode(MOTORPINA2,OUTPUT);
     pinMode(PWMB,OUTPUT);
+
   }
   void setMotorSpeed(int i, int spd){
     unsigned char reverse = 0;
@@ -111,16 +119,20 @@
 
     if (i == LEFT) { 
       if (reverse == 0) { 
-        digitalWrite(DIRA,HIGH);
+        digitalWrite(MOTORPINA1,HIGH);
+        digitalWrite(MOTORPINA2,LOW);
       } else if (reverse == 1) { 
-        digitalWrite(DIRA,LOW);
+        digitalWrite(MOTORPINA1,LOW);
+        digitalWrite(MOTORPINA2,HIGH);
       }
       analogWrite(PWMA,spd);
     } else /*if (i == RIGHT) //no need for condition*/ {
       if (reverse == 0) { 
-        digitalWrite(DIRB,LOW);        
+        digitalWrite(MOTORPINB1,HIGH);
+        digitalWrite(MOTORPINB2,LOW);        
       } else if (reverse == 1) { 
-        digitalWrite(DIRB,HIGH);
+        digitalWrite(MOTORPINB1,LOW);
+        digitalWrite(MOTORPINB2,HIGH);
       }
       analogWrite(PWMB,spd);
     }

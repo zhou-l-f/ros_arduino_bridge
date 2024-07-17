@@ -5,6 +5,7 @@
    http://vanadium-ros-pkg.googlecode.com/svn/trunk/arbotix/
 */
 
+
 /* PID setpoint info For a Motor */
 typedef struct {
   double TargetTicksPerFrame;    // target speed in ticks per frame
@@ -65,66 +66,67 @@ void resetPID(){
 }
 
 /* PID routine to compute the next motor commands */
-void doPID(SetPointInfo * p) {
-  long Perror;
-  long output;
-  int input;
+// void doPID(SetPointInfo * p) {
+//   long Perror;
+//   long output;
+//   int input;
 
-  //Perror = p->TargetTicksPerFrame - (p->Encoder - p->PrevEnc);
-  input = p->Encoder - p->PrevEnc;
-  Perror = p->TargetTicksPerFrame - input;
+//   //Perror = p->TargetTicksPerFrame - (p->Encoder - p->PrevEnc);
+//   input = p->Encoder - p->PrevEnc;
+//   Perror = p->TargetTicksPerFrame - input;
 
 
-  /*
-  * Avoid derivative kick and allow tuning changes,
-  * see http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-derivative-kick/
-  * see http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-tuning-changes/
-  */
-  //output = (Kp * Perror + Kd * (Perror - p->PrevErr) + Ki * p->Ierror) / Ko;
-  // p->PrevErr = Perror;
-  output = (Kp * Perror - Kd * (input - p->PrevInput) + p->ITerm) / Ko;
-  p->PrevEnc = p->Encoder;
+//   /*
+//   * Avoid derivative kick and allow tuning changes,
+//   * see http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-derivative-kick/
+//   * see http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-tuning-changes/
+//   */
+//   //output = (Kp * Perror + Kd * (Perror - p->PrevErr) + Ki * p->Ierror) / Ko;
+//   // p->PrevErr = Perror;
+//   output = (Kp * Perror - Kd * (input - p->PrevInput) + p->ITerm) / Ko;
+//   p->PrevEnc = p->Encoder;
 
-  output += p->output;
-  // Accumulate Integral error *or* Limit output.
-  // Stop accumulating when output saturates
-  if (output >= MAX_PWM)
-    output = MAX_PWM;
-  else if (output <= -MAX_PWM)
-    output = -MAX_PWM;
-  else
-  /*
-  * allow turning changes, see http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-tuning-changes/
-  */
-    p->ITerm += Ki * Perror;
+//   output += p->output;
+//   // Accumulate Integral error *or* Limit output.
+//   // Stop accumulating when output saturates
+//   if (output >= MAX_PWM)
+//     output = MAX_PWM;
+//   else if (output <= -MAX_PWM)
+//     output = -MAX_PWM;
+//   else
+//   /*
+//   * allow turning changes, see http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-tuning-changes/
+//   */
+//     p->ITerm += Ki * Perror;
 
-  p->output = output;
-  p->PrevInput = input;
-}
+//   p->output = output;
+//   p->PrevInput = input;
+// }
 
-/* Read the encoder values and call the PID routine */
-void updatePID() {
-  /* Read the encoders */
-  leftPID.Encoder = readEncoder(LEFT);
-  rightPID.Encoder = readEncoder(RIGHT);
+
+// /* Read the encoder values and call the PID routine */
+// void updatePID() {
+//   /* Read the encoders */
+//   leftPID.Encoder = readEncoder(LEFT);
+//   rightPID.Encoder = readEncoder(RIGHT);
   
-  /* If we're not moving there is nothing more to do */
-  if (!moving){
-    /*
-    * Reset PIDs once, to prevent startup spikes,
-    * see http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-initialization/
-    * PrevInput is considered a good proxy to detect
-    * whether reset has already happened
-    */
-    if (leftPID.PrevInput != 0 || rightPID.PrevInput != 0) resetPID();
-    return;
-  }
+//   /* If we're not moving there is nothing more to do */
+//   if (!moving){
+//     /*
+//     * Reset PIDs once, to prevent startup spikes,
+//     * see http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-initialization/
+//     * PrevInput is considered a good proxy to detect
+//     * whether reset has already happened
+//     */
+//     if (leftPID.PrevInput != 0 || rightPID.PrevInput != 0) resetPID();
+//     return;
+//   }
 
-  /* Compute PID update for each motor */
-  doPID(&rightPID);
-  doPID(&leftPID);
+//   /* Compute PID update for each motor */
+//   doPID(&rightPID);
+//   doPID(&leftPID);
 
-  /* Set the motor speeds accordingly */
-  setMotorSpeeds(leftPID.output, rightPID.output);
-}
+//   /* Set the motor speeds accordingly */
+//   setMotorSpeeds(leftPID.output, rightPID.output);
+// }
 

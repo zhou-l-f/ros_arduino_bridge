@@ -13,6 +13,7 @@
   #define RIGHT_ENC_PIN_A PC4  //pin A4
   #define RIGHT_ENC_PIN_B PC5   //pin A5
 #elif defined ARDUINO_MY_COUNTER
+  #include<PID_v1.h> //调用PID包
   #define LEFT_A 21
   #define LEFT_B 20
   #define RIGHT_A 18
@@ -22,6 +23,11 @@
   void leftEncoderEventB();
   void rightEncoderEventA();
   void rightEncoderEventB();
+  void update_vel();
+  double get_current_vel(volatile long count);
+  double kp=1.5, ki=3.0, kd=0.1;
+  double vela,velb,vel;
+  double pwma,pwmb;
 #endif
 
 long readEncoder(int i);

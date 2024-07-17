@@ -10,10 +10,16 @@
   #define RIGHT_MOTOR_ENABLE 12
   #define LEFT_MOTOR_ENABLE 13
 #elif defined L298P_MOTOR_DRIVER
-  #define DIRA 4
+  #define MOTORPINA1 6
+  #define MOTORPINA2 7
   #define PWMA 5
-  #define DIRB 7
-  #define PWMB 6
+  #define MOTORPINB1 8
+  #define MOTORPINB2 9
+  #define PWMB 10
+  // #define DIRA 4
+  // #define PWMA 5
+  // #define DIRB 7
+  // #define PWMB 6
 #endif
 
 void initMotorController();

@@ -45,6 +45,9 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
+
+
+
 #define USE_BASE      // Enable the base controller code
 //#undef USE_BASE     // Disable the base controller code
 
@@ -122,6 +125,7 @@
    in this number of milliseconds */
   #define AUTO_STOP_INTERVAL 5000
   long lastMotorCommand = AUTO_STOP_INTERVAL;
+
 #endif
 
 /* Variable initialization */
@@ -161,37 +165,37 @@ int runCommand() {
   char *p = argv1;
   char *str;
   int pid_args[4];
-  arg1 = atoi(argv1);
-  arg2 = atoi(argv2);
+  arg1 = atoi(argv1); //atoi(NULL) 返回值是0
+  arg2 = atoi(argv2); //这两行代码的意义是将输入的字符参数转化为对应的整数，如速度等
   
   switch(cmd) {
-  case GET_BAUDRATE:
+  case GET_BAUDRATE:    //输出当前设定的比特率 奇奇怪怪的东西 知道特定比特率我才能接受返回的信息啊
     Serial.println(BAUDRATE);
     break;
-  case ANALOG_READ:
+  case ANALOG_READ:  //读取对应pwm引脚的大小
     Serial.println(analogRead(arg1));
     break;
-  case DIGITAL_READ:
+  case DIGITAL_READ: //读取对应引脚的高低频
     Serial.println(digitalRead(arg1));
     break;
-  case ANALOG_WRITE:
+  case ANALOG_WRITE://修改对应pwm引脚arg1的大小,大小为arg2 
     analogWrite(arg1, arg2);
     Serial.println("OK"); 
     break;
-  case DIGITAL_WRITE:
+  case DIGITAL_WRITE: //修改对应引脚的高低频 arg2为0/1
     if (arg2 == 0) digitalWrite(arg1, LOW);
     else if (arg2 == 1) digitalWrite(arg1, HIGH);
     Serial.println("OK"); 
     break;
-  case PIN_MODE:
+  case PIN_MODE:    //修改对应引脚的输入输出模式
     if (arg2 == 0) pinMode(arg1, INPUT);
     else if (arg2 == 1) pinMode(arg1, OUTPUT);
     Serial.println("OK");
     break;
-  case PING:
+  case PING: //输出对应引脚的输入输出模式
     Serial.println(Ping(arg1));
     break;
-#ifdef USE_SERVOS
+#ifdef USE_SERVOS //我们没有使用舵机不管这个
   case SERVO_WRITE:
     servos[arg1].setTargetPosition(arg2);
     Serial.println("OK");
@@ -202,14 +206,14 @@ int runCommand() {
 #endif
     
 #ifdef USE_BASE
-  case READ_ENCODERS:
+  case READ_ENCODERS:  //读取左右轮的转数
     Serial.print(readEncoder(LEFT));
     Serial.print(" ");
     Serial.println(readEncoder(RIGHT));
     break;
-   case RESET_ENCODERS:
+   case RESET_ENCODERS: //重置转数
     resetEncoders();
-    resetPID();
+    resetPID(); 
     Serial.println("OK");
     break;
   case MOTOR_SPEEDS: //---------------------------------------------
@@ -224,17 +228,23 @@ int runCommand() {
     //设置左右电机目标转速分别为参数1和参数2
     leftPID.TargetTicksPerFrame = arg1;
     rightPID.TargetTicksPerFrame = arg2;
+
+    PID pid_a(&vela,&pwma,&leftPID.TargetTicksPerFrame,kp,ki,kd,DIRECT);
+    PID pid_b(&velb,&pwmb,&rightPID.TargetTicksPerFrame,kp,ki,kd,DIRECT);
+    //调用 Compute函数生成PWM值
+    pid_a.Compute();
+    pid_b.Compute();
     Serial.println("OK"); 
     break;
   case UPDATE_PID:
-    while ((str = strtok_r(p, ":", &p)) != '\0') {
+    while ((str = strtok_r(p, ":", &p)) != '\0') {    //strtok_r函数的作用按某个字符来分割字符串。p指向的是argv1栈 在这个命令下的参数argv1存储的是PID的三个参数
        pid_args[i] = atoi(str);
        i++;
     }
     Kp = pid_args[0];
     Kd = pid_args[1];
     Ki = pid_args[2];
-    Ko = pid_args[3];
+    //Ko = pid_args[3];
     Serial.println("OK");
     break;
 #endif
@@ -269,11 +279,11 @@ void setup() {
     
     // enable PCINT1 and PCINT2 interrupt in the general interrupt mask
     PCICR |= (1 << PCIE1) | (1 << PCIE2);
-    #elif defined ARDUINO_MY_COUNTER
+    #elif defined ARDUINO_MY_COUNTER  //我们用的是这个
     initEncoders();
     #endif
     initMotorController();
-    resetPID();
+    resetPID();   //需要加入我们自己写的PID 
 #endif
 
 /* Attach servos if used */
@@ -293,14 +303,21 @@ void setup() {
    interval and check for auto-stop conditions.
 */
 void loop() {
+
+  /*
+    chr 是用来从系统缓冲区中一个一个读取字符并存储到chr中
+    cmd 是当第一个存储进来的chr就赋值给cmd对应命令的种类
+    arg 是用来记录 后续读进来的非空格字符数 最大两个
+    argv 是用来保存两个输入进来的参数值
+  */
   while (Serial.available() > 0) {
     
     // Read the next character
     chr = Serial.read();
 
     // Terminate a command with a CR
-    if (chr == 13) {
-      if (arg == 1) argv1[index] = NULL;
+    if (chr == 13) {   //  13(CR)  对应回车键
+      if (arg == 1) argv1[index] = NULL;  
       else if (arg == 2) argv2[index] = NULL;
       runCommand();
       resetCommand();
@@ -310,7 +327,7 @@ void loop() {
       // Step through the arguments
       if (arg == 0) arg = 1;
       else if (arg == 1)  {
-        argv1[index] = NULL;
+        argv1[index] = NULL; 
         arg = 2;
         index = 0;
       }
@@ -335,13 +352,17 @@ void loop() {
   
 // If we are using base control, run a PID calculation at the appropriate intervals
 #ifdef USE_BASE
-  if (millis() > nextPID) {
-    updatePID();
+  // if (millis() > nextPID) {
+  //   //updatePID();
+  //   nextPID += PID_INTERVAL;
+  // }
+  if (millis() > nextPID) { //沿用了原本的达到一定时间就进行一次pid控速，相当于我们自己写的delay(1000)
+    update_vel();
     nextPID += PID_INTERVAL;
   }
-  
+
   // Check to see if we have exceeded the auto-stop interval
-  if ((millis() - lastMotorCommand) > AUTO_STOP_INTERVAL) {;
+  if ((millis() - lastMotorCommand) > AUTO_STOP_INTERVAL) {; //超过5秒不进行速度设定操作就停下来
     setMotorSpeeds(0, 0);
     moving = 0;
   }
