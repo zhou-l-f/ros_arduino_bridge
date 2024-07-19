@@ -96,8 +96,8 @@
     pinMode(MOTORPINA1,OUTPUT);
     pinMode(MOTORPINA2,OUTPUT);
     pinMode(PWMA,OUTPUT);
-    pinMode(MOTORPINA1,OUTPUT);
-    pinMode(MOTORPINA2,OUTPUT);
+    pinMode(MOTORPINB1,OUTPUT);
+    pinMode(MOTORPINB2,OUTPUT);
     pinMode(PWMB,OUTPUT);
 
   }

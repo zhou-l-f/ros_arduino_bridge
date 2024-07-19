@@ -224,7 +224,9 @@ void update_vel()
 
   vela = get_current_vel(left_count);
   velb = get_current_vel(right_count);
-  
+  //调用 Compute函数生成PWM值
+  pid_a.Compute();
+  pid_b.Compute();
   setMotorSpeeds(pwma,pwmb);
 }
   #else

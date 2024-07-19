@@ -229,11 +229,10 @@ int runCommand() {
     leftPID.TargetTicksPerFrame = arg1;
     rightPID.TargetTicksPerFrame = arg2;
 
-    PID pid_a(&vela,&pwma,&leftPID.TargetTicksPerFrame,kp,ki,kd,DIRECT);
-    PID pid_b(&velb,&pwmb,&rightPID.TargetTicksPerFrame,kp,ki,kd,DIRECT);
-    //调用 Compute函数生成PWM值
-    pid_a.Compute();
-    pid_b.Compute();
+    target_a = arg1;
+    target_b = arg2;
+    Serial.println(target_a); 
+    Serial.println(target_b); 
     Serial.println("OK"); 
     break;
   case UPDATE_PID:
@@ -281,6 +280,8 @@ void setup() {
     PCICR |= (1 << PCIE1) | (1 << PCIE2);
     #elif defined ARDUINO_MY_COUNTER  //我们用的是这个
     initEncoders();
+    pid_a.SetMode(AUTOMATIC);
+    pid_b.SetMode(AUTOMATIC);
     #endif
     initMotorController();
     resetPID();   //需要加入我们自己写的PID 
@@ -356,16 +357,18 @@ void loop() {
   //   //updatePID();
   //   nextPID += PID_INTERVAL;
   // }
-  if (millis() > nextPID) { //沿用了原本的达到一定时间就进行一次pid控速，相当于我们自己写的delay(1000)
-    update_vel();
-    nextPID += PID_INTERVAL;
-  }
+  // if (millis() > nextPID) { //沿用了原本的达到一定时间就进行一次pid控速，相当于我们自己写的delay(1000)
+  //   update_vel();
+  //   nextPID += PID_INTERVAL;
+  // }
 
-  // Check to see if we have exceeded the auto-stop interval
-  if ((millis() - lastMotorCommand) > AUTO_STOP_INTERVAL) {; //超过5秒不进行速度设定操作就停下来
-    setMotorSpeeds(0, 0);
-    moving = 0;
-  }
+  // // Check to see if we have exceeded the auto-stop interval
+  // if ((millis() - lastMotorCommand) > AUTO_STOP_INTERVAL) {; //超过5秒不进行速度设定操作就停下来
+  //   setMotorSpeeds(0, 0);
+  //   moving = 0;
+  // }
+  delay(1000);
+  update_vel();
 #endif
 
 // Sweep servos

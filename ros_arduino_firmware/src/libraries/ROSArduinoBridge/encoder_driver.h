@@ -26,8 +26,9 @@
   void update_vel();
   double get_current_vel(volatile long count);
   double kp=1.5, ki=3.0, kd=0.1;
-  double vela,velb,vel;
+  double vela,velb,vel,target_a,target_b;
   double pwma,pwmb;
+  PID pid_a(&vela,&pwma,&target_a,kp,ki,kd,DIRECT),pid_b(&velb,&pwmb,&target_b,kp,ki,kd,DIRECT);
 #endif
 
 long readEncoder(int i);
